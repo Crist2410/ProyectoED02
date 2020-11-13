@@ -1,0 +1,43 @@
+﻿@model MVC_Proyecto.Models.Usuario
+@{
+    ViewData["Title"] = "MenuPrincipal";
+}
+<header class="hero2">
+    <div class="textos-hero2">
+        <h1>@ViewData["NombreUser"]</h1>
+    </div>
+    <div class="svg-hero" style="height: 100px; overflow: hidden;">
+        <svg viewBox="0 0 500 100" preserveAspectRatio="none"
+             style="height: 100%; width: 100%;">
+            <path d="M0.00,49.98 C149.99,150.00 349.20,-49.98 500.00,49.98 L500.00,150.00 L0.00,150.00 Z"
+                  style="stroke: none; fill: #fff;"></path>
+        </svg>
+    </div>
+</header>
+<div>
+    <section class="info-last">
+        <div>
+            <div class="contenedor last-section">
+                <div class="contenedor-textos-main">
+                    <h2 class="titulo left">Contactos</h2>
+                    @foreach (var Item in ViewBag.Contactos)
+                    {
+                        <p>
+                            @Item.Nombre (@Item.User)
+                            <a href="" class="btn btn-outline-info">Mostrar Chat</a>
+                        </p>
+                    }
+                    <a asp-action="Registrarse">Agregar Contacto</a>
+                </div>
+                <div class="chat">
+                    Chats
+                </div>
+            </div>
+        </div>
+        <hr/>
+            <div style="padding:20px; padding-bottom: 30px">
+                <a asp-action="Index" class="btn btn-outline-dark"> Regresar</a>
+                <a asp-action="Index" class="btn btn-outline-info"> Configuración</a>
+            </div>
+    </section>
+</div>
