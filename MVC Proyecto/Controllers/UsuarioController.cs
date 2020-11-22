@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MVC_Proyecto.Models;
+using System.Net.Http;
 
 namespace MVC_Proyecto.Controllers
 {
@@ -15,37 +16,45 @@ namespace MVC_Proyecto.Controllers
         // GET: Usuario
         public ActionResult Index()
         {
-            Usuario User1 = new Usuario()
+            IEnumerable<Usuario> ListaUsuarios;
+            HttpResponseMessage response = VariablesGlobales.WebApiClient.GetAsync("Usuarios").Result;
+            ListaUsuarios = response.Content.ReadAsAsync<IEnumerable<Usuario>>().Result;
+            foreach (var item in ListaUsuarios)
             {
-                User = "Josegrn",
-                PassWord = "Holamundo",
-                Nombre = "Jose",
-                Apellido = "Giron",
-                Genero = "Masculino",
-                Edad = 18
-            };
-            Usuario User2 = new Usuario()
-            {
-                User = "Pepito",
-                PassWord = "Holamundo",
-                Nombre = "Pepito",
-                Apellido = "Barrios",
-                Genero = "Masculino",
-                Edad = 18
-            };
-            Usuario User = new Usuario()
-            {
-                User = "Cris",
-                PassWord = "Holamundo",
-                Nombre = "Cristian",
-                Apellido = "Barrientos",
-                Genero = "Masculino",
-                Edad = 18
-            };
-            User.Contactos.Add(User1);
-            User.Contactos.Add(User2);
-            Lista.Add(User);
+                Lista.Add(item);
+            }
             return View();
+            //Usuario User1 = new Usuario()
+            //{
+            //    User = "Josegrn",
+            //    PassWord = "Holamundo",
+            //    Nombre = "Jose",
+            //    Apellido = "Giron",
+            //    Genero = "Masculino",
+            //    Edad = 18
+            //};
+            //Usuario User2 = new Usuario()
+            //{
+            //    User = "Pepito",
+            //    PassWord = "Holamundo",
+            //    Nombre = "Pepito",
+            //    Apellido = "Barrios",
+            //    Genero = "Masculino",
+            //    Edad = 18
+            //};
+            //Usuario User = new Usuario()
+            //{
+            //    User = "Cris",
+            //    PassWord = "Holamundo",
+            //    Nombre = "Cristian",
+            //    Apellido = "Barrientos",
+            //    Genero = "Masculino",
+            //    Edad = 18
+            //};
+            //User.Contactos.Add(User1);
+            //User.Contactos.Add(User2);
+            //Lista.Add(User);
+            //return View();
         }
         public ActionResult IniciarSesion()
         {
