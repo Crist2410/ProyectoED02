@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MVC_Proyecto.Models;
+using MVC_Proyecto.Clases;
+using System.Net.Http;
 
 namespace MVC_Proyecto.Controllers
 {
@@ -12,6 +14,8 @@ namespace MVC_Proyecto.Controllers
     {
         static List<Usuario> Lista = new List<Usuario>();
         static Usuario UserActivo = new Usuario();
+
+        
         // GET: Usuario
         public ActionResult Index()
         {
@@ -55,7 +59,8 @@ namespace MVC_Proyecto.Controllers
         {
             return View();
         }
-        public ActionResult GuardarUsuario (IFormCollection collection)
+        [HttpPost]
+        public async Task<ActionResult> GuardarUsuarioAsync (IFormCollection collection)
         {
             Usuario User = new Usuario();
             User.Nombre = collection["Nombre"];
@@ -65,6 +70,14 @@ namespace MVC_Proyecto.Controllers
             User.Genero = collection["Genero"];
             User.Edad = Convert.ToInt32(collection["Edad"]);
             Lista.Add(User);
+            //var client = new HttpClient();
+            //var endpoint = "http://localhost:2640/api/students";
+            //var response = await client.PostAsync(endpoint,);
+            //    PostAsJsonAsync(endpoint, User);
+            //if (response.IsSuccessStatusCode)
+            //{
+            //    return RedirectToAction("Index");
+            //}
             return View("Index");
         }
         public ActionResult Ingresar (IFormCollection collection)
