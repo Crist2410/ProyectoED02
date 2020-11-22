@@ -14,7 +14,6 @@ namespace MVC_Proyecto.Controllers
     {
         static List<Usuario> Lista = new List<Usuario>();
         static Usuario UserActivo = new Usuario();
-
         
         // GET: Usuario
         public ActionResult Index()
@@ -27,37 +26,7 @@ namespace MVC_Proyecto.Controllers
                 Lista.Add(item);
             }
             return View();
-            //Usuario User1 = new Usuario()
-            //{
-            //    User = "Josegrn",
-            //    PassWord = "Holamundo",
-            //    Nombre = "Jose",
-            //    Apellido = "Giron",
-            //    Genero = "Masculino",
-            //    Edad = 18
-            //};
-            //Usuario User2 = new Usuario()
-            //{
-            //    User = "Pepito",
-            //    PassWord = "Holamundo",
-            //    Nombre = "Pepito",
-            //    Apellido = "Barrios",
-            //    Genero = "Masculino",
-            //    Edad = 18
-            //};
-            //Usuario User = new Usuario()
-            //{
-            //    User = "Cris",
-            //    PassWord = "Holamundo",
-            //    Nombre = "Cristian",
-            //    Apellido = "Barrientos",
-            //    Genero = "Masculino",
-            //    Edad = 18
-            //};
-            //User.Contactos.Add(User1);
-            //User.Contactos.Add(User2);
-            //Lista.Add(User);
-            //return View();
+           
         }
         public ActionResult IniciarSesion()
         {
@@ -68,7 +37,7 @@ namespace MVC_Proyecto.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<ActionResult> GuardarUsuarioAsync (IFormCollection collection)
+        public ActionResult GuardarUsuarioAsync (IFormCollection collection)
         {
             Usuario User = new Usuario();
             User.Nombre = collection["Nombre"];
@@ -78,14 +47,7 @@ namespace MVC_Proyecto.Controllers
             User.Genero = collection["Genero"];
             User.Edad = Convert.ToInt32(collection["Edad"]);
             Lista.Add(User);
-            //var client = new HttpClient();
-            //var endpoint = "http://localhost:2640/api/students";
-            //var response = await client.PostAsync(endpoint,);
-            //    PostAsJsonAsync(endpoint, User);
-            //if (response.IsSuccessStatusCode)
-            //{
-            //    return RedirectToAction("Index");
-            //}
+            HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Usuarios", User).Result;
             return View("Index");
         }
         public ActionResult Ingresar (IFormCollection collection)
