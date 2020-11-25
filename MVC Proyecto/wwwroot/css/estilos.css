@@ -153,12 +153,10 @@ a2 {
 
     .last-section img {
         width: 48%;
-        
     }
 
     .last-section .contacto {
         width: 40%;
-
     }
 
 
@@ -169,12 +167,22 @@ a2 {
         color: #fff;
         padding: 8px;
     }
+
+    .last-section .chatsend {
+        width: 58%;
+        border-radius: 2px;
+        background: #1a044e;
+        color: #fff;
+        padding: 2px;
+    }
+
     .last-section .contenedor-textos-main {
         width: 40%;
         border: rgba(34, 33, 33, 0.473) solid 3px;
         padding: 8px;
         border-radius: 5px;
     }
+
         .last-section .contenedor-textos-main a {
             display: inline-block;
             text-decoration: none;
