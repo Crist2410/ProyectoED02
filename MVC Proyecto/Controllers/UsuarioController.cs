@@ -57,13 +57,36 @@ namespace MVC_Proyecto.Controllers
             Usuario User = new Usuario();
             User.User = collection["User"];
             User.PassWord = collection["PassWord"];
-            UserActivo = ListUsuarios.Find(x => x.User == User.User);
-            ViewData["NombreUser"] = UserActivo.User;
-            ViewBag.Contactos = UserActivo.Contactos;
-            if (User.PassWord == UserActivo.PassWord)
-                return View("MenuPrincipal", UserActivo);
+            if (ListUsuarios.Exists(x => x.User == User.User))
+            {
+                UserActivo = ListUsuarios.Find(x => x.User == User.User);
+                ViewData["NombreUser"] = UserActivo.User;
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.GetAsync("Contactos").Result;
+                IEnumerable<Contacto> ListaContactos = response.Content.ReadAsAsync<IEnumerable<Contacto>>().Result;
+                foreach (var item in ListaContactos)
+                {
+                    if ( UserActivo.User == item.Usuario && !UserActivo.Contactos.Exists(x => x.User == item.Contact) )
+                    {
+                        UserActivo.Contactos.Add(ListUsuarios.Find(x => x.User == item.Contact));
+                    }
+                    else if (UserActivo.User == item.Contact && !UserActivo.Contactos.Exists(x => x.User == item.Usuario))
+                    {
+                        UserActivo.Contactos.Add(ListUsuarios.Find(x => x.User == item.Usuario));
+                    }
+                }
+                ViewBag.Contactos = UserActivo.Contactos;
+                if (User.PassWord == UserActivo.PassWord)
+                    return View("MenuPrincipal", UserActivo);
+                else
+                {
+                    UserActivo = new Usuario();
+                    return View("IniciarSesion");
+                }
+            }
             else
+            {
                 return View("IniciarSesion");
+            }
         }
 
         public ActionResult OpcionContato()
@@ -75,12 +98,17 @@ namespace MVC_Proyecto.Controllers
         }
         public ActionResult AgregarContacto(string Texto)
         {
-            if (ListUsuarios.Exists(x => x.User == Texto))
+            if (ListUsuarios.Exists(x => x.User == Texto) && !UserActivo.Contactos.Exists(x => x.User == Texto))
             {
                 Usuario User = new Usuario();
                 User.User = Texto;
                 ViewData["NombreUser"] = UserActivo.User;
+                Contacto NuevoContacto = new Contacto();
+                NuevoContacto.Chat = UserActivo.User + User.User + UserActivo.User + User.User;
+                NuevoContacto.Contact = User.User;
+                NuevoContacto.Usuario = UserActivo.User;
                 UserActivo.Contactos.Add(ListUsuarios.Find(x => x.User == User.User));
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Contactos", NuevoContacto).Result;
                 ViewBag.Contactos = UserActivo.Contactos;
                 ViewBag.AgregarContacto = false;
                 return View("MenuPrincipal", UserActivo);
@@ -133,7 +161,7 @@ namespace MVC_Proyecto.Controllers
             NuevoMensaje.Texto = Texto;
             NuevoMensaje.Emisor = UserActivo.User;
             NuevoMensaje.Receptor = UserChat.User;
-            NuevoMensaje.Fecha = DateTime.UtcNow.Date;
+            NuevoMensaje.Fecha = DateTime.Now;
             NuevoMensaje.Chat = NuevoMensaje.Emisor + NuevoMensaje.Receptor + NuevoMensaje.Receptor + NuevoMensaje.Emisor;
             HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Mensajes", NuevoMensaje).Result;
             IEnumerable<Mensaje> Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;

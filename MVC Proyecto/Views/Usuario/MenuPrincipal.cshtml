@@ -46,20 +46,21 @@
             @if (ViewBag.MostarChat == true)
             {
                 <div class="chat">
-                    @foreach (var item in ViewBag.Chats)
-                    {
-                        <div>
-                            @item.Emisor :  @item.Texto
-                        </div>
-                    }
+                    <div class="showchat" style="max-height:350px; overflow:auto">
+                        @foreach (var item in ViewBag.Chats)
+                        {
+                            <div class="mensaje" style="border-radius:5px; color:#1a044e; background:#fff; margin: 2px; width:max-content;padding: 2px;padding-right: 8px;">
+                                @item.Emisor : @item.Texto
+                            </div>
+                        }
+                    </div>
                     <div class="chatsend">
                         <hr />
                         <form asp-action="EnviarMensaje">
                             <div class="form-group">
-                                <input class="form-control mr-sm-2" style="margin-bottom:2px" placeholder="Mensaje" name="Texto">
-                            </div>
-                            <div class="form-group">
+                                <input class="form-control mr-sm-2" style="margin-bottom:2px;width: 160%;margin-bottom: 10px;" placeholder="Mensaje" name="Texto">
                                 <input type="submit" value="Enviar" class="btn btn-outline-light my-2 my-sm-0" />
+                                <input type="file" value="Subir Archivo" style="position: absolute;margin: 10px;" class="btn btn-outline-light my-2 my-sm-0" />
                             </div>
                         </form>
                     </div>
@@ -74,7 +75,7 @@
         <div>
             <div style="padding:20px; padding-bottom: 30px">
                 <a asp-action="Index" class="btn btn-outline-dark"> Regresar</a>
-                <a asp-action="Index" class="btn btn-outline-info"> Configuración</a>
+                <a asp-action="Index" class="btn btn-outline-info"> Recargar</a>
             </div>
         </div>
     </section>
