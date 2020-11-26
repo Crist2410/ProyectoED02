@@ -17,6 +17,8 @@ namespace API_Proyecto.Models
         public string PassWord { get; set; }
         public string Nombre { get; set; }
         public string Apellido { get; set; }
+        public int RandomSecret { get; set; }
+        public int PublicKey { get; set; }
         public string Genero { get; set; }
         public int Edad { get; set; }
     }
