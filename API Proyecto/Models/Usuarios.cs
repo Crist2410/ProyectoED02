@@ -21,7 +21,5 @@ namespace API_Proyecto.Models
         public int PublicKey { get; set; }
         public string Genero { get; set; }
         public int Edad { get; set; }
-        public int RandomSecret { get; set; }
-        public int PublicKey { get; set; }
     }
 }
