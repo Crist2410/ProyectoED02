@@ -21,9 +21,24 @@ namespace API_Proyecto.Servicios
         {
             return _Usuarios.Find(Usuario => true).ToList();
         }
-        public Usuarios ObtenerUsuario(string User)
+        public Usuarios ObtenerUsuario(Usuarios User)
         {
-            return _Usuarios.Find(Usuario => Usuario.User == User).FirstOrDefault();
+            string Pass = User.PassWord;
+            User =  _Usuarios.Find(Usuario => Usuario.User == User.User).FirstOrDefault();
+            if (User != null && User.PassWord == Pass)
+            {
+                return User;
+            }
+            return default;
+        }
+        public Usuarios ObtenerPorUser(string value)
+        {
+            Usuarios User = _Usuarios.Find(Usuario => Usuario.User == value).FirstOrDefault();
+            if (User != null)
+            {
+                return User;
+            }
+            return default;
         }
         public Usuarios ObtenerID(string Id)
         {

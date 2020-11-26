@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Libreria;
 
 namespace API_Proyecto.Controllers
 {
@@ -41,15 +42,23 @@ namespace API_Proyecto.Controllers
         }
 
         //Cargar conversacion
-        [HttpGet("chat/{value}", Name = "ObtenerConversacion")]
+        [HttpPost("chat")]
         public ActionResult<List<Mensajes>> GetConversation(Mensajes value)
         {
+            SDES Cifrado = new SDES();
             var Lista = _Mensajes.FiltrarConversacion(value);
             if (Lista.Count != 0)
             {
+                foreach (var Item in Lista)
+                {
+                    if(value.Emisor == Item.Emisor)
+                        Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                    else
+                        Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                }
                 return Lista;
             }
-            return NotFound();
+            return default;
         }
 
         // GET: api/Usuarios/
@@ -70,10 +79,19 @@ namespace API_Proyecto.Controllers
         [HttpPost]
         public ActionResult<List<Mensajes>> Send(Mensajes mensaje)
         {
+            SDES Cifrado = new SDES();
+            mensaje.Texto = Cifrado.cifrado(mensaje.Texto, mensaje.RandomSecret, mensaje.PublicKey);
             _Mensajes.EnivarMensaje(mensaje);
             var Lista = _Mensajes.FiltrarConversacion(mensaje);
             if (Lista.Count != 0)
             {
+                foreach (var Item in Lista)
+                {
+                    if (mensaje.Emisor == Item.Emisor)
+                        Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                    else
+                        Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                }
                 return Lista;
             }
             return NotFound();

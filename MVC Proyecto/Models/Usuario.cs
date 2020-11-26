@@ -15,6 +15,8 @@ namespace MVC_Proyecto.Models
         public string Apellido { get; set; }
         public string Genero { get; set; }
         public int Edad { get; set; }
+        public int RandomSecret { get; set; }
+        public int PublicKey { get; set; }
         public List<Usuario> Contactos = new List<Usuario>();
     }
 }
