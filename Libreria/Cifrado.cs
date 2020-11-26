@@ -5,22 +5,9 @@ using System.Text;
 
 namespace Libreria
 {
-    class Cifrado
+    public class Cifrado
     {
         string k1, k2;
-
-        public int GeneracionPublicKey(int RandomSecret)
-        {
-            int primo = 233;
-            int entero = 80;
-            return Convert.ToInt32(BigInteger.ModPow(entero, (BigInteger)RandomSecret, (BigInteger)primo));
-        }
-
-        public int GeneracionSecretKey(int RandomSecret, int PublicKey)
-        {
-            int primo = 233;
-            return Convert.ToInt32(BigInteger.ModPow(PublicKey, (BigInteger)RandomSecret, (BigInteger)primo));
-        }
 
         public string LlavePermutaciones(int Key)
         {
@@ -54,7 +41,9 @@ namespace Libreria
         }
         public string cifrado(string texto, int RandomSecret, int PublicKey)
         {
-            int SecretKey = GeneracionSecretKey(RandomSecret, PublicKey);
+            DiffieHellman diffie = new DiffieHellman();
+
+            int SecretKey = diffie.GeneracionSecretKey(RandomSecret, PublicKey);
 
             Generacionllaves(LlavePermutaciones(SecretKey));
 
@@ -118,8 +107,14 @@ namespace Libreria
             texto = Convert.ToBase64String(ListaBytes.ToArray());
             return texto;
         }
-        public string descifrado(string texto)
+        public string descifrado(string texto, int RandomSecret, int PublicKey)
         {
+            DiffieHellman diffie = new DiffieHellman();
+
+            int SecretKey = diffie.GeneracionSecretKey(RandomSecret, PublicKey);
+
+            Generacionllaves(LlavePermutaciones(SecretKey));
+
             byte[] ArregloBytes = Convert.FromBase64String(texto);
             List<byte> ListaBytes = new List<byte>();
             string[,] S0 = llenadoS0();
