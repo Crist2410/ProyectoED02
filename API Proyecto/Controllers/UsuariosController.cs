@@ -6,6 +6,7 @@ using API_Proyecto.Models;
 using API_Proyecto.Servicios;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Libreria;
 
 namespace API_Proyecto.Controllers
 {
@@ -36,25 +37,44 @@ namespace API_Proyecto.Controllers
             }
             return NotFound();
         }
+        // GET: api/Usuarios/5
+        [HttpPost("user")]
+        public ActionResult<Usuarios> ObtenerUser(Usuarios user)
+        {
+            CifradoCesar Cesar = new CifradoCesar();
+            user.PassWord = Cesar.Cifrar(user.PassWord);
+            var Usuario = _Usuarios.ObtenerUsuario(user);
+            if (Usuario != null)
+            {
+                Usuario.PassWord = Cesar.Decifrar(Usuario.PassWord);
+                return Usuario;
+            }
+            return default;
+        }
+
+        [HttpPost("busqueda")]
+        public ActionResult<Usuarios> ObtenerporUser(Usuarios user)
+        {
+            var Usuario = _Usuarios.ObtenerPorUser(user.User);
+            if (Usuario != null)
+            {
+                return Usuario;
+            }
+            return default;
+        }
 
         // POST: api/Usuarios
         [HttpPost]
         public ActionResult<Usuarios> Post(Usuarios value)
         {
+            DiffieHellman MayonesaHellmans = new DiffieHellman();
+            CifradoCesar Cesar = new CifradoCesar();
+            value.PassWord = Cesar.Cifrar(value.PassWord);
+            value.RandomSecret = _Usuarios.ObtenerTodos().Count + 3; ;
+            value.PublicKey = MayonesaHellmans.GeneracionPublicKey(value.RandomSecret);
             _Usuarios.CrearUsuario(value);
             return CreatedAtRoute("ObtenerUsuario",new { Id = value.ID.ToString()},value);
         }
 
-        // PUT: api/Usuarios/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Libreria
 {
-    public class Cifrado
+    public class SDES
     {
         string k1, k2;
 
@@ -39,6 +39,7 @@ namespace Libreria
 
             k2 = ProcesoPermutacion8(suma);
         }
+
         public string cifrado(string texto, int RandomSecret, int PublicKey)
         {
             DiffieHellman diffie = new DiffieHellman();

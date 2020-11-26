@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,5 +13,8 @@ namespace MVC_Proyecto.Models
         public string Receptor { get; set; }
         public string Chat { get; set; }
         public DateTime Fecha { get; set; }
+        public int RandomSecret { get; set; }
+        public int PublicKeyUser { get; set; }
+        public int PublicKey { get; set; }
     }
 }

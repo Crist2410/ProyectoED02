@@ -16,6 +16,9 @@ namespace API_Proyecto.Models
         public string Emisor { get; set; }
         public string Receptor { get; set; }
         public string Chat { get; set; }
+        public int RandomSecret { get; set; }
+        public int PublicKey { get; set; }
+        public int PublicKeyUser { get; set; }
         public DateTime Fecha { get; set; }
     }
 }
