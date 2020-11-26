@@ -14,6 +14,7 @@ namespace MVC_Proyecto.Controllers
         static List<Usuario> ListUsuarios = new List<Usuario>();
         static List<Mensaje> ListMesajes = new List<Mensaje>();
         static Usuario UserActivo = new Usuario();
+
         static Usuario UserChat = new Usuario();
 
         // GET: Usuario
@@ -28,7 +29,6 @@ namespace MVC_Proyecto.Controllers
                     ListUsuarios.Add(item);
             }
             return View();
-
         }
         public ActionResult IniciarSesion()
         {
@@ -39,7 +39,7 @@ namespace MVC_Proyecto.Controllers
             return View();
         }
         [HttpPost]
-        public ActionResult GuardarUsuarioAsync(IFormCollection collection)
+        public ActionResult GuardarUsuarioAsync (IFormCollection collection)
         {
             Usuario User = new Usuario();
             User.Nombre = collection["Nombre"];
