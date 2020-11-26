@@ -5,16 +5,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MVC_Proyecto.Models;
-using MVC_Proyecto.Clases;
 using System.Net.Http;
 
 namespace MVC_Proyecto.Controllers
 {
     public class UsuarioController : Controller
     {
-        static List<Usuario> Lista = new List<Usuario>();
+        static List<Usuario> ListUsuarios = new List<Usuario>();
+        static List<Mensaje> ListMesajes = new List<Mensaje>();
         static Usuario UserActivo = new Usuario();
-        
+
+        static Usuario UserChat = new Usuario();
+
         // GET: Usuario
         public ActionResult Index()
         {
@@ -23,10 +25,10 @@ namespace MVC_Proyecto.Controllers
             ListaUsuarios = response.Content.ReadAsAsync<IEnumerable<Usuario>>().Result;
             foreach (var item in ListaUsuarios)
             {
-                Lista.Add(item);
+                if (!ListUsuarios.Exists(x => x.User == item.User))
+                    ListUsuarios.Add(item);
             }
             return View();
-           
         }
         public ActionResult IniciarSesion()
         {
@@ -46,28 +48,134 @@ namespace MVC_Proyecto.Controllers
             User.PassWord = collection["PassWord"];
             User.Genero = collection["Genero"];
             User.Edad = Convert.ToInt32(collection["Edad"]);
-            Lista.Add(User);
+            ListUsuarios.Add(User);
             HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Usuarios", User).Result;
-            return View("Index"); 
+            return View("Index");
         }
-        public ActionResult Ingresar (IFormCollection collection)
+        public ActionResult Ingresar(IFormCollection collection)
         {
             Usuario User = new Usuario();
             User.User = collection["User"];
             User.PassWord = collection["PassWord"];
-            UserActivo = Lista.Find(x => x.User == User.User);
-            ViewData["NombreUser"] = UserActivo.User;
-            ViewBag.Contactos = UserActivo.Contactos;
-            if (User.PassWord == UserActivo.PassWord)
-                return View("MenuPrincipal", UserActivo);
+            if (ListUsuarios.Exists(x => x.User == User.User))
+            {
+                UserActivo = ListUsuarios.Find(x => x.User == User.User);
+                ViewData["NombreUser"] = UserActivo.User;
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.GetAsync("Contactos").Result;
+                IEnumerable<Contacto> ListaContactos = response.Content.ReadAsAsync<IEnumerable<Contacto>>().Result;
+                foreach (var item in ListaContactos)
+                {
+                    if ( UserActivo.User == item.Usuario && !UserActivo.Contactos.Exists(x => x.User == item.Contact) )
+                    {
+                        UserActivo.Contactos.Add(ListUsuarios.Find(x => x.User == item.Contact));
+                    }
+                    else if (UserActivo.User == item.Contact && !UserActivo.Contactos.Exists(x => x.User == item.Usuario))
+                    {
+                        UserActivo.Contactos.Add(ListUsuarios.Find(x => x.User == item.Usuario));
+                    }
+                }
+                ViewBag.Contactos = UserActivo.Contactos;
+                if (User.PassWord == UserActivo.PassWord)
+                    return View("MenuPrincipal", UserActivo);
+                else
+                {
+                    UserActivo = new Usuario();
+                    return View("IniciarSesion");
+                }
+            }
             else
+            {
                 return View("IniciarSesion");
+            }
         }
 
-        // GET: Usuario/Details/5
-        public ActionResult Details(int id)
+        public ActionResult OpcionContato()
         {
-            return View();
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.AgregarContacto = true;
+            return View("MenuPrincipal", UserActivo);
+        }
+        public ActionResult AgregarContacto(string Texto)
+        {
+            if (ListUsuarios.Exists(x => x.User == Texto) && !UserActivo.Contactos.Exists(x => x.User == Texto))
+            {
+                Usuario User = new Usuario();
+                User.User = Texto;
+                ViewData["NombreUser"] = UserActivo.User;
+                Contacto NuevoContacto = new Contacto();
+                NuevoContacto.Chat = UserActivo.User + User.User + UserActivo.User + User.User;
+                NuevoContacto.Contact = User.User;
+                NuevoContacto.Usuario = UserActivo.User;
+                UserActivo.Contactos.Add(ListUsuarios.Find(x => x.User == User.User));
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Contactos", NuevoContacto).Result;
+                ViewBag.Contactos = UserActivo.Contactos;
+                ViewBag.AgregarContacto = false;
+                return View("MenuPrincipal", UserActivo);
+            }
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.AgregarContacto = true;
+            return View("MenuPrincipal", UserActivo);
+        }
+
+        public ActionResult MostrarChat(string UChat)
+        {
+            if (ListUsuarios.Exists(x => x.User == UChat))
+            {
+                UserChat = ListUsuarios.Find(x => x.User == UChat);
+                IEnumerable<Mensaje> Lista;
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.GetAsync("Mensajes").Result;
+                Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
+                List<Mensaje> Chats = new List<Mensaje>();
+                foreach (var Item in Lista)
+                {
+                    if (!ListMesajes.Exists(x => x == Item))
+                    {
+                        ListMesajes.Add(Item);
+                    }
+                    if (Item.Chat.Contains(UserChat.User + UserActivo.User))
+                    {
+                        Chats.Add(Item);
+                    }
+                }
+                Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
+                ViewBag.Chats = Chats;
+                ViewData["NombreUser"] = UserActivo.User;
+                ViewBag.Contactos = UserActivo.Contactos;
+                ViewBag.AgregarContacto = false;
+                ViewBag.MostarChat = true;
+                return View("MenuPrincipal", UserActivo);
+            }
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.AgregarContacto = false;
+            ViewBag.MostarChat = false;
+            return View("MenuPrincipal", UserActivo);
+
+        }
+
+        public ActionResult EnviarMensaje(string Texto)
+        {
+            Mensaje NuevoMensaje = new Mensaje();
+            NuevoMensaje.Texto = Texto;
+            NuevoMensaje.Emisor = UserActivo.User;
+            NuevoMensaje.Receptor = UserChat.User;
+            NuevoMensaje.Fecha = DateTime.Now;
+            NuevoMensaje.Chat = NuevoMensaje.Emisor + NuevoMensaje.Receptor + NuevoMensaje.Receptor + NuevoMensaje.Emisor;
+            HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Mensajes", NuevoMensaje).Result;
+            IEnumerable<Mensaje> Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
+            List<Mensaje> Chats = new List<Mensaje>();
+            foreach (var Item in Lista)
+            {
+                Chats.Add(Item);
+            }
+            Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
+            ViewBag.Chats = Chats;
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.MostarChat = true;
+            return View("MenuPrincipal", UserActivo);
         }
 
         // GET: Usuario/Create

@@ -32,6 +32,8 @@ namespace API_Proyecto
             services.Configure<ProyectoDataBaseSettings>(Configuration.GetSection(nameof(ProyectoDataBaseSettings)));
             services.AddSingleton<IProyectoDataBaseSettings>(Obj => Obj.GetRequiredService<IOptions<ProyectoDataBaseSettings>>().Value);
             services.AddSingleton<ServicioUsuarios>();
+            services.AddSingleton<ServicioMensajes>();
+            services.AddSingleton<ServicioContactos>();
             services.AddControllers();
         }
 

@@ -7,22 +7,19 @@ namespace Libreria
 {
     class Cifrado
     {
-        string k1 = "11010011", k2 = "00101101";
+        string k1, k2;
 
-        public int DiffieHellman()
+        public int GeneracionPublicKey(int RandomSecret)
         {
             int primo = 233;
             int entero = 80;
-            int RandomSecret;
-            Random random = new Random();
+            return Convert.ToInt32(BigInteger.ModPow(entero, (BigInteger)RandomSecret, (BigInteger)primo));
+        }
 
-            RandomSecret = random.Next(2, 232);
-
-            BigInteger value = BigInteger.ModPow(entero, (BigInteger)RandomSecret, (BigInteger)primo);
-
-            int resultado = Convert.ToInt32(value);
-
-            return resultado;
+        public int GeneracionSecretKey(int RandomSecret, int PublicKey)
+        {
+            int primo = 233;
+            return Convert.ToInt32(BigInteger.ModPow(PublicKey, (BigInteger)RandomSecret, (BigInteger)primo));
         }
 
         public string LlavePermutaciones(int Key)
@@ -31,7 +28,7 @@ namespace Libreria
             return Numero;
         }
 
-        public void llaves(string llave)
+        public void Generacionllaves(string llave)
         {
             string Permutar10 = ProcesoPermutar10(llave);
 
@@ -48,15 +45,19 @@ namespace Libreria
             Mitad1 = suma.Substring(0, 5);
             Mitad2 = suma.Substring(5, 5);
 
-            LS1 = ProcesoLS1(Mitad1);
+            LS1 = ProcesoLS2(Mitad1);
             suma = LS1;
-            LS1 = ProcesoLS1(Mitad2);
+            LS1 = ProcesoLS2(Mitad2);
             suma += LS1;
 
             k2 = ProcesoPermutacion8(suma);
         }
-        public string cifrado(string texto)
+        public string cifrado(string texto, int RandomSecret, int PublicKey)
         {
+            int SecretKey = GeneracionSecretKey(RandomSecret, PublicKey);
+
+            Generacionllaves(LlavePermutaciones(SecretKey));
+
             byte[] ArregloBytes = Encoding.UTF8.GetBytes(texto);
             texto = "";
             List<byte> ListaBytes = new List<byte>();
@@ -274,6 +275,10 @@ namespace Libreria
         public string ProcesoLS1(string Mitad)
         {
             return (Mitad.Substring(1, 1) + Mitad.Substring(2, 1) + Mitad.Substring(3, 1) + Mitad.Substring(4, 1) + Mitad.Substring(0, 1));
+        }
+        public string ProcesoLS2(string Mitad)
+        {
+            return (Mitad.Substring(2, 1) + Mitad.Substring(3, 1) + Mitad.Substring(4, 1) + Mitad.Substring(0, 1) + Mitad.Substring(1, 1));
         }
         public string ProcesoPermutacion8(string suma)
         {
