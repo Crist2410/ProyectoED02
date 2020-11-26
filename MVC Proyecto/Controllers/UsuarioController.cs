@@ -48,7 +48,7 @@ namespace MVC_Proyecto.Controllers
             User.Edad = Convert.ToInt32(collection["Edad"]);
             Lista.Add(User);
             HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Usuarios", User).Result;
-            return View("Index");
+            return View("Index"); 
         }
         public ActionResult Ingresar (IFormCollection collection)
         {
