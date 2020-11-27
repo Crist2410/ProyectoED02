@@ -14,7 +14,6 @@ namespace MVC_Proyecto.Controllers
         static List<Usuario> ListUsuarios = new List<Usuario>();
         static List<Mensaje> ListMesajes = new List<Mensaje>();
         static Usuario UserActivo = new Usuario();
-        string UsuarioSeleccionado;
         static Usuario UserChat = new Usuario();
 
         // GET: Usuario
@@ -121,12 +120,10 @@ namespace MVC_Proyecto.Controllers
             ViewBag.AgregarContacto = true;
             return View("MenuPrincipal", UserActivo);
         }
-
         public ActionResult MostrarChat(string UChat)
         {
             Usuario AuxUser = new Usuario();
             AuxUser.User = UChat;
-            UsuarioSeleccionado = UChat;
             HttpResponseMessage R1 = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", AuxUser).Result;
             AuxUser = R1.Content.ReadAsAsync<Usuario>().Result;
             if (AuxUser != null)
