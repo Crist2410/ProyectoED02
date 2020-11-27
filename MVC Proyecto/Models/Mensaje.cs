@@ -17,6 +17,8 @@ namespace MVC_Proyecto.Models
         public int RandomSecret { get; set; }
         public int PublicKeyUser { get; set; }
         public int PublicKey { get; set; }
-        public IFormFile File { get; set; }
+        public string File { get; set; }
+        public string FileNombre { get; set; }
+
     }
 }

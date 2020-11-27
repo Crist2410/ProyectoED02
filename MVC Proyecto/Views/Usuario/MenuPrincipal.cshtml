@@ -61,9 +61,18 @@
             <div class="showchat" style="max-height:350px; overflow:auto">
                 @foreach (var item in ViewBag.Chats)
                 {
-                    <div class="mensaje" style="border-radius:5px; color:#1a044e; background:#fff; margin: 2px; width:max-content;padding: 2px;padding-right: 8px;">
-                        @item.Emisor : @item.Texto
-                    </div>
+                    @if (item.Texto != null && item.Texto != "")
+                    {
+                        <div class="mensaje" style="border-radius:5px; color:#1a044e; background:#fff; margin: 2px; width:max-content;padding: 2px;padding-right: 8px;">
+                            @item.Emisor : @item.Texto
+                        </div>
+                    }
+                    else if (item.File != null && item.File != "")
+                    {
+                        <div class="mensaje" style="border-radius:5px; color:#1a044e; background:#fff; margin: 2px; width:max-content;padding: 2px;padding-right: 8px;">
+                             @item.Emisor : @item.FileNombre   @Html.ActionLink("Descargar", "DescargarArchivo", new { Ruta = item.File })
+                        </div>
+                    }
                 }
             </div>
             <div class="chatsend">
@@ -73,12 +82,17 @@
                     <form asp-action="EnviarMensaje">
                         <div class="form-group">
                             <input class="form-control mr-sm-2" style="margin-bottom:2px;width: 160%;margin-bottom: 10px;" placeholder="Mensaje" name="Texto">
-                            <input type="submit" value="Enviar" class="btn btn-outline-light my-2 my-sm-0" />
-                            <input type="file" value="Subir Archivo" style="position: absolute;margin: 10px;" class="btn btn-outline-light my-2 my-sm-0" />
+                            <input type="submit" value="Enviar" class="btn btn-outline-light" />
                         </div>
                     </form>
+                     @using (Html.BeginForm("EnviarFile", "Usuario", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                      {
+                         <input type="file" value="Subir Archivo" name="file" id="file" style="margin: 10px;" class="btn btn-outline-light" />
+                         <input type="submit" value="Enviar Archivo" class="btn btn-outline-light" />
+                      }
+                  
                 }
-                </div>
+            </div>
             </div>
             }
             else

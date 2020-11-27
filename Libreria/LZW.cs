@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Libreria
 {
-    class LZW
+    public class LZW
     {
         FileStream ArchivoDestino;
         FileStream ArchivoOriginal;

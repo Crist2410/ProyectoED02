@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MVC_Proyecto.Models;
 using System.Net.Http;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace MVC_Proyecto.Controllers
 {
@@ -16,6 +18,12 @@ namespace MVC_Proyecto.Controllers
         static Usuario UserActivo = new Usuario();
         string UsuarioSeleccionado;
         static Usuario UserChat = new Usuario();
+        private readonly IWebHostEnvironment webHostEnvironment;
+
+        public UsuarioController(IWebHostEnvironment env)
+        {
+            webHostEnvironment = env;
+        }
 
         // GET: Usuario
         public ActionResult Index()
@@ -215,11 +223,9 @@ namespace MVC_Proyecto.Controllers
             ViewBag.MostarChat = false;
             return View("MenuPrincipal", UserActivo);
         }
-
         public ActionResult EnviarMensaje(string Texto)
         {
             Mensaje NuevoMensaje = new Mensaje();
-           // NuevoMensaje.File = File;
             NuevoMensaje.Texto = Texto;
             NuevoMensaje.Emisor = UserActivo.User;
             NuevoMensaje.Receptor = UserChat.User;
@@ -244,6 +250,52 @@ namespace MVC_Proyecto.Controllers
             ViewBag.FiltrarMensaje = true;
             return View("MenuPrincipal", UserActivo);
         }
+        [HttpPost]
+        public async Task<ActionResult> EnviarFileAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ViewData["NombreUser"] = UserActivo.User;
+                ViewBag.Contactos = UserActivo.Contactos;
+                ViewBag.AgregarContacto = false;
+                //ViewBag.MostarChat = true;
+                //ViewBag.Enviar = true;
+                //ViewBag.FiltrarMensaje = true;
+                return View("MenuPrincipal", UserActivo);
+            }
+            var Ruta = Path.Combine( webHostEnvironment.ContentRootPath,"wwwroot","Archivos", file.FileName);
+
+            using (var stream = new FileStream(Ruta, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            Mensaje NuevoMensaje = new Mensaje();
+            NuevoMensaje.File = Ruta;
+            NuevoMensaje.Emisor = UserActivo.User;
+            NuevoMensaje.Receptor = UserChat.User;
+            NuevoMensaje.RandomSecret = UserActivo.RandomSecret;
+            NuevoMensaje.PublicKey = UserChat.PublicKey;
+            NuevoMensaje.PublicKeyUser = UserActivo.PublicKey;
+            NuevoMensaje.Fecha = DateTime.Now;
+            NuevoMensaje.FileNombre = file.FileName;
+            NuevoMensaje.Chat = NuevoMensaje.Emisor + NuevoMensaje.Receptor + NuevoMensaje.Receptor + NuevoMensaje.Emisor;           
+            HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Mensajes", NuevoMensaje).Result;
+            IEnumerable<Mensaje> Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
+            List<Mensaje> Chats = new List<Mensaje>();
+            foreach (var Item in Lista)
+            {
+                Chats.Add(Item);
+            }
+            Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
+            ViewBag.Chats = Chats;
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.MostarChat = true;
+            ViewBag.Enviar = true;
+            ViewBag.FiltrarMensaje = true;
+            return View("MenuPrincipal", UserActivo);
+        }
+
         public ActionResult Recargar()
         {
             Usuario AuxUser = UserChat;
@@ -285,7 +337,38 @@ namespace MVC_Proyecto.Controllers
             ViewBag.AgregarContacto = false;
             ViewBag.MostarChat = false;
             return View("MenuPrincipal", UserActivo);
-
+        }
+        public FileResult DescargarArchivo(string Ruta)
+        {
+            Usuario AuxUser = UserChat;
+            if (AuxUser != null)
+            {
+                UserChat = AuxUser;
+                Mensaje msm = new Mensaje();
+                msm.RandomSecret = UserActivo.RandomSecret;
+                msm.PublicKey = UserChat.PublicKey;
+                msm.PublicKeyUser = UserActivo.PublicKey;
+                msm.Emisor = UserActivo.User;
+                msm.Receptor = UserChat.User;
+                msm.File = Ruta;
+                msm.FileNombre = Path.Combine(webHostEnvironment.ContentRootPath, "wwwroot", "Descargas");
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/descargar", msm).Result;
+                string FileFinal = response.Content.ReadAsAsync<string>().Result;
+                byte[] FileBytes = GetFile(FileFinal);
+                return File(FileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, Path.GetFileName(FileFinal));
+                //return File(FileFinal, "application/force- download", Path.GetFileName(FileFinal));
+            }
+            return null;
+        }
+        byte[] GetFile(string s)
+        {
+            System.IO.FileStream fs = System.IO.File.OpenRead(s);
+            byte[] data = new byte[fs.Length];
+            int br = fs.Read(data, 0, data.Length);
+            if (br != fs.Length)
+                throw new System.IO.IOException(s);
+            fs.Close();
+            return data;
         }
     }
 }

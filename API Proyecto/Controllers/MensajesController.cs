@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Libreria;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace API_Proyecto.Controllers
 {
@@ -51,14 +53,38 @@ namespace API_Proyecto.Controllers
             {
                 foreach (var Item in Lista)
                 {
-                    if(value.Emisor == Item.Emisor)
+                    if (value.Emisor == Item.Emisor && Item.Texto != null)
                         Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
-                    else
+                    else if (Item.Texto != null)
                         Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+
                 }
                 return Lista;
             }
             return default;
+        }
+        //Cargar conversacion
+        [HttpPost("archivo")]
+        public ActionResult<bool> EnviarArchivo(Mensajes value)
+        {
+            try
+            {
+                LZW Compresor = new LZW();
+                // string RutaOriginal = Path.GetFullPath("Archivos Originales\\" + file.FileName);
+                //string RutaCompresion = Path.GetFullPath("Archivos Compress\\" + file.FileName.Split('.')[0] + ".lzw");
+                string RutaCompresion = Path.GetFullPath("Archivos Compress\\" + "hola" + ".lzw");
+                //FileStream ArchivoOriginal = new FileStream(RutaOriginal, FileMode.OpenOrCreate);
+                //file.CopyTo(ArchivoOriginal);
+                //ArchivoOriginal.Close();
+                Compresor.Comprimir(value.File, RutaCompresion);
+                //FileInfo Original = new FileInfo(RutaOriginal);
+                //FileInfo Comprimido = new FileInfo(RutaCompresion);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         // GET: api/Usuarios/
@@ -74,27 +100,85 @@ namespace API_Proyecto.Controllers
             return NotFound();
         }
 
+        [HttpPost("descargar")]
+        public string Descargar(Mensajes mensaje)
+        {
+            var Lista = _Mensajes.FiltrarConversacion(mensaje);
+            LZW Compresor = new LZW();
+            if (Lista.Count != 0)
+            {
+                foreach (var item in Lista)
+                {
+                    if(mensaje.File == item.File)
+                    {
+                        string RutaDecompres = Path.GetFullPath("Archivos Decompress\\" + item.FileNombre);
+                        string RutaDevulto = Path.Combine(mensaje.FileNombre, item.FileNombre);
+                        Compresor.Descomprimir(item.File, RutaDecompres);
+                        FileStream ArchivoFinal = new FileStream(RutaDecompres, FileMode.Open);
+                        FileStream ArchivoDevuelto = new FileStream(RutaDevulto, FileMode.OpenOrCreate);
+                        FileStreamResult FileFinal = new FileStreamResult(ArchivoFinal, "text/"+item.FileNombre.Split('.')[1]);
+                        ArchivoFinal.CopyToAsync(ArchivoDevuelto);
+                        ArchivoDevuelto.Close();
+                        ArchivoFinal.Close();
+                        return RutaDevulto;
+                    }
+                }
+            }
+            return default;
+        }
+
         //Enviar Mensaje
         // POST: api/Usuarios
         [HttpPost]
         public ActionResult<List<Mensajes>> Send(Mensajes mensaje)
         {
             SDES Cifrado = new SDES();
-            mensaje.Texto = Cifrado.cifrado(mensaje.Texto, mensaje.RandomSecret, mensaje.PublicKey);
-            _Mensajes.EnivarMensaje(mensaje);
-            var Lista = _Mensajes.FiltrarConversacion(mensaje);
-            if (Lista.Count != 0)
+            if (mensaje.Texto != "" && mensaje.Texto != null)
             {
-                foreach (var Item in Lista)
+                mensaje.Texto = Cifrado.cifrado(mensaje.Texto, mensaje.RandomSecret, mensaje.PublicKey);
+                _Mensajes.EnivarMensaje(mensaje);
+                var Lista = _Mensajes.FiltrarConversacion(mensaje);
+                if (Lista.Count != 0)
                 {
-                    if (mensaje.Emisor == Item.Emisor)
-                        Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
-                    else
-                        Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                    foreach (var Item in Lista)
+                    {
+                        if (mensaje.Emisor == Item.Emisor && Item.Texto != null)
+                            Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                        else if (Item.Texto != null)
+                            Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                    }
+                    return Lista;
                 }
-                return Lista;
+                return default;
             }
-            return NotFound();
+            else
+            {
+                try
+                {
+                    LZW Compresor = new LZW();
+                    string RutaCompresion = Path.GetFullPath("Archivos Compress\\" + mensaje.FileNombre.Split('.')[0] + ".lzw");
+                    Compresor.Comprimir(mensaje.File, RutaCompresion);
+                    mensaje.File = RutaCompresion;
+                    _Mensajes.EnivarMensaje(mensaje);
+                    var Lista = _Mensajes.FiltrarConversacion(mensaje);
+                    if (Lista.Count != 0)
+                    {
+                        foreach (var Item in Lista)
+                        {
+                            if (mensaje.Emisor == Item.Emisor && Item.Texto != null)
+                                Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                            else if (Item.Texto != null)
+                                Item.Texto = Cifrado.descifrado(Item.Texto, Item.RandomSecret, Item.PublicKey);
+                        }
+                        return Lista;
+                    }
+                    return default;
+                }
+                catch (Exception)
+                {
+                    return default;
+                }
+            }
         }
     }
 }
