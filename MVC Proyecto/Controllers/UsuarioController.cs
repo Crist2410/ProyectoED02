@@ -14,7 +14,7 @@ namespace MVC_Proyecto.Controllers
         static List<Usuario> ListUsuarios = new List<Usuario>();
         static List<Mensaje> ListMesajes = new List<Mensaje>();
         static Usuario UserActivo = new Usuario();
-
+        string UsuarioSeleccionado;
         static Usuario UserChat = new Usuario();
 
         // GET: Usuario
@@ -126,6 +126,7 @@ namespace MVC_Proyecto.Controllers
         {
             Usuario AuxUser = new Usuario();
             AuxUser.User = UChat;
+            UsuarioSeleccionado = UChat;
             HttpResponseMessage R1 = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", AuxUser).Result;
             AuxUser = R1.Content.ReadAsAsync<Usuario>().Result;
             if (AuxUser != null)
@@ -165,6 +166,49 @@ namespace MVC_Proyecto.Controllers
             ViewBag.MostarChat = false;
             return View("MenuPrincipal", UserActivo);
 
+        }
+        public ActionResult BuscarMensaje(string Filtro)
+        {
+            Usuario AuxUser = new Usuario();
+            AuxUser.User = UserChat.User;
+            HttpResponseMessage R1 = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", AuxUser).Result;
+            AuxUser = R1.Content.ReadAsAsync<Usuario>().Result;
+            if (AuxUser != null)
+            {
+                UserChat = AuxUser;
+                Mensaje msm = new Mensaje();
+                msm.RandomSecret = UserActivo.RandomSecret;
+                msm.PublicKey = UserChat.PublicKey;
+                msm.PublicKeyUser = UserActivo.PublicKey;
+                msm.Emisor = UserActivo.User;
+                msm.Receptor = UserChat.User;
+                IEnumerable<Mensaje> Lista;
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/chat", msm).Result;
+                Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
+                List<Mensaje> Chats = new List<Mensaje>();
+                if (Lista != null)
+                {
+                    foreach (var Item in Lista)
+                    {
+                        if (Item.Chat.Contains(UserChat.User + UserActivo.User) && Item.Texto.Contains(Filtro))
+                        {
+                            Chats.Add(Item);
+                        }
+                    }
+                    Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
+                }
+                ViewBag.Chats = Chats;
+                ViewData["NombreUser"] = UserActivo.User;
+                ViewBag.Contactos = UserActivo.Contactos;
+                ViewBag.AgregarContacto = false;
+                ViewBag.MostarChat = true;
+                return View("MenuPrincipal", UserActivo);
+            }
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.AgregarContacto = false;
+            ViewBag.MostarChat = false;
+            return View("MenuPrincipal", UserActivo);
         }
 
         public ActionResult EnviarMensaje(string Texto)
