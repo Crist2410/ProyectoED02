@@ -19,6 +19,8 @@ namespace MVC_Proyecto.Models
         public int PublicKey { get; set; }
         public string File { get; set; }
         public string FileNombre { get; set; }
+        public IFormFile Archivo;
+
 
     }
 }

@@ -48,16 +48,6 @@ namespace API_Proyecto
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseStaticFiles();
-
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Archivos Compress")),
-                RequestPath = new PathString("/Archivos Compress")
-            });
-
-            app.UseHttpsRedirection();
-
             app.UseRouting();
 
             app.UseAuthorization();

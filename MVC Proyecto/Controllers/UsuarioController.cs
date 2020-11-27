@@ -274,9 +274,17 @@ namespace MVC_Proyecto.Controllers
             NuevoMensaje.PublicKey = UserChat.PublicKey;
             NuevoMensaje.PublicKeyUser = UserActivo.PublicKey;
             NuevoMensaje.Fecha = DateTime.Now;
+            NuevoMensaje.Archivo = file;
             NuevoMensaje.FileNombre = file.FileName;
-            NuevoMensaje.Chat = NuevoMensaje.Emisor + NuevoMensaje.Receptor + NuevoMensaje.Receptor + NuevoMensaje.Emisor;           
-            HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Mensajes", NuevoMensaje).Result;
+            NuevoMensaje.Chat = NuevoMensaje.Emisor + NuevoMensaje.Receptor + NuevoMensaje.Receptor + NuevoMensaje.Emisor;
+            //
+            byte[] FileBytes = GetFile(Ruta);
+            Archivo archivo = new Archivo();
+            archivo.Contenido = FileBytes;
+            archivo.Nombre = Path.GetFileName(Ruta);
+            archivo.Ruta = Ruta;
+            HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/subirarchivo", archivo).Result;
+            response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Mensajes", NuevoMensaje).Result;
             IEnumerable<Mensaje> Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
             List<Mensaje> Chats = new List<Mensaje>();
             foreach (var Item in Lista)
