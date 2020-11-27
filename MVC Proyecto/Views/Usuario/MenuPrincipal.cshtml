@@ -19,13 +19,15 @@
         <div class="contenedor last-section">
             <div class="contenedor-textos-main">
                 <h2 class="titulo left">Contactos</h2>
-                @foreach (var Item in ViewBag.Contactos)
-                {
-                    <p>
-                        @Item.Nombre (@Item.User)
-                        @Html.ActionLink("Mostrar Chat", "MostrarChat", new { UChat = Item.User })
-                    </p>
-                }
+                <div style="max-height:350px; overflow:auto">
+                    @foreach (var Item in ViewBag.Contactos)
+                    {
+                        <p>
+                            @Item.Nombre (@Item.User)
+                            @Html.ActionLink("Mostrar Chat", "MostrarChat", new { UChat = Item.User })
+                        </p>
+                    }
+                </div>
                 <a asp-action="OpcionContato">Agregar Contacto</a>
 
                 <hr />
@@ -42,6 +44,15 @@
                             </div>
                         </form>
                     }
+                    else if (ViewBag.FiltrarMensaje == true){
+
+                        <form asp-action="BuscarMensaje">
+                            <div class="form-group">
+                                <input type="submit" value="Filtrar" class="btn btn-dark" />
+                                <input class="form-control mr-sm-2" style="width:60%;margin-top: 10px;" placeholder="Filtrar" name="Filtro">
+                            </div>
+                        </form>
+                    }
                 </div>
             </div>
             @if (ViewBag.MostarChat == true)
@@ -50,32 +61,39 @@
             <div class="showchat" style="max-height:350px; overflow:auto">
                 @foreach (var item in ViewBag.Chats)
                 {
-                    <div class="mensaje" style="border-radius:5px; color:#1a044e; background:#fff; margin: 2px; width:max-content;padding: 2px;padding-right: 8px;">
-                        @item.Emisor : @item.Texto
-                    </div>
+                    @if (item.Texto != null && item.Texto != "")
+                    {
+                        <div class="mensaje" style="border-radius:5px; color:#1a044e; background:#fff; margin: 2px; width:max-content;padding: 2px;padding-right: 8px;">
+                            @item.Emisor : @item.Texto
+                        </div>
+                    }
+                    else if (item.File != null && item.File != "")
+                    {
+                        <div class="mensaje" style="border-radius:5px; color:#1a044e; background:#fff; margin: 2px; width:max-content;padding: 2px;padding-right: 8px;">
+                             @item.Emisor : @item.FileNombre   @Html.ActionLink("Descargar", "DescargarArchivo", new { Ruta = item.File })
+                        </div>
+                    }
                 }
             </div>
             <div class="chatsend">
                 <hr />
-                <form asp-action="EnviarMensaje">
-                    <div class="form-group">
-                        <input class="form-control mr-sm-2" style="margin-bottom:2px;width: 160%;margin-bottom: 10px;" placeholder="Mensaje" name="Texto">
-                        <input type="submit" value="Enviar" class="btn btn-outline-light my-2 my-sm-0" />
-                        <input type="file" value="Subir Archivo" style="position: absolute;margin: 10px;" class="btn btn-outline-light my-2 my-sm-0" />
-                    </div>
-                </form>
+                @if (ViewBag.Enviar == true)
+                {
+                    <form asp-action="EnviarMensaje">
+                        <div class="form-group">
+                            <input class="form-control mr-sm-2" style="margin-bottom:2px;width: 160%;margin-bottom: 10px;" placeholder="Mensaje" name="Texto">
+                            <input type="submit" value="Enviar" class="btn btn-outline-light" />
+                        </div>
+                    </form>
+                     @using (Html.BeginForm("EnviarFile", "Usuario", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                      {
+                         <input type="file" value="Subir Archivo" name="file" id="file" style="margin: 10px;" class="btn btn-outline-light" />
+                         <input type="submit" value="Enviar Archivo" class="btn btn-outline-light" />
+                      }
+                  
+                }
             </div>
-            <div class="chatsend">
-                <hr />
-                <form asp-action="BuscarMensaje">
-                    <div class="form-group">
-                        <input type="submit" value="Filtrar" class="btn btn-outline-light my-2 my-sm-0" />
-                        <input class="form-control mr-sm-2" style="margin-bottom:2px;position:absolute;width:100%;margin-bottom: 10px;" placeholder="Filtrar" name="Filtro">
-                    </div>
-                </form>
             </div>
-            
-        </div>
             }
             else
             {
@@ -85,9 +103,9 @@
         <hr />
         <div>
             <div style="padding:20px; padding-bottom: 30px">
-                <a asp-action="Index" class="btn btn-outline-dark"> Regresar</a>
-                <a asp-action="Index" class="btn btn-outline-info"> Recargar</a>
+                <a asp-action="Index" class="btn btn-outline-dark"> Cerrar Sesion</a>
+                <a asp-action="Recargar" class="btn btn-outline-info"> Recargar</a>
             </div>
         </div>
-    </section>
+    </section>  
 </div>

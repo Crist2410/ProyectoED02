@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MVC_Proyecto.Models;
 using System.Net.Http;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace MVC_Proyecto.Controllers
 {
@@ -15,13 +17,18 @@ namespace MVC_Proyecto.Controllers
         static List<Mensaje> ListMesajes = new List<Mensaje>();
         static Usuario UserActivo = new Usuario();
         static Usuario UserChat = new Usuario();
+        private readonly IWebHostEnvironment webHostEnvironment;
+
+        public UsuarioController(IWebHostEnvironment env)
+        {
+            webHostEnvironment = env;
+        }
 
         // GET: Usuario
         public ActionResult Index()
         {
-            IEnumerable<Usuario> ListaUsuarios;
-            HttpResponseMessage response = VariablesGlobales.WebApiClient.GetAsync("Usuarios").Result;
-            ListaUsuarios = response.Content.ReadAsAsync<IEnumerable<Usuario>>().Result;
+            UserChat = new Usuario();
+            UserActivo = new Usuario();
             return View();
         }
         public ActionResult IniciarSesion()
@@ -33,7 +40,7 @@ namespace MVC_Proyecto.Controllers
             return View();
         }
         [HttpPost]
-        public ActionResult GuardarUsuarioAsync (IFormCollection collection)
+        public ActionResult GuardarUsuarioAsync(IFormCollection collection)
         {
             Usuario User = new Usuario();
             User.Nombre = collection["Nombre"];
@@ -63,7 +70,7 @@ namespace MVC_Proyecto.Controllers
                 {
                     HttpResponseMessage Contact;
                     Usuario contactouser = new Usuario();
-                    if ( UserActivo.User == item.Usuario && !UserActivo.Contactos.Exists(x => x.User == item.Contact) )
+                    if (UserActivo.User == item.Usuario && !UserActivo.Contactos.Exists(x => x.User == item.Contact))
                     {
                         contactouser.User = item.Contact;
                         Contact = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", contactouser).Result;
@@ -99,7 +106,7 @@ namespace MVC_Proyecto.Controllers
             contactouser.User = Texto;
             Contact = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", contactouser).Result;
             contactouser = Contact.Content.ReadAsAsync<Usuario>().Result;
-        
+
             if (contactouser != null && contactouser.User != UserActivo.User)
             {
                 Usuario User = new Usuario();
@@ -155,6 +162,8 @@ namespace MVC_Proyecto.Controllers
                 ViewBag.Contactos = UserActivo.Contactos;
                 ViewBag.AgregarContacto = false;
                 ViewBag.MostarChat = true;
+                ViewBag.Enviar = true;
+                ViewBag.FiltrarMensaje = true;
                 return View("MenuPrincipal", UserActivo);
             }
             ViewData["NombreUser"] = UserActivo.User;
@@ -166,40 +175,44 @@ namespace MVC_Proyecto.Controllers
         }
         public ActionResult BuscarMensaje(string Filtro)
         {
-            Usuario AuxUser = new Usuario();
-            AuxUser.User = UserChat.User;
-            HttpResponseMessage R1 = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", AuxUser).Result;
-            AuxUser = R1.Content.ReadAsAsync<Usuario>().Result;
-            if (AuxUser != null)
+            if (Filtro != null)
             {
-                UserChat = AuxUser;
-                Mensaje msm = new Mensaje();
-                msm.RandomSecret = UserActivo.RandomSecret;
-                msm.PublicKey = UserChat.PublicKey;
-                msm.PublicKeyUser = UserActivo.PublicKey;
-                msm.Emisor = UserActivo.User;
-                msm.Receptor = UserChat.User;
-                IEnumerable<Mensaje> Lista;
-                HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/chat", msm).Result;
-                Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
-                List<Mensaje> Chats = new List<Mensaje>();
-                if (Lista != null)
+                Usuario AuxUser = new Usuario();
+                AuxUser.User = UserChat.User;
+                HttpResponseMessage R1 = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", AuxUser).Result;
+                AuxUser = R1.Content.ReadAsAsync<Usuario>().Result;
+                if (AuxUser != null)
                 {
-                    foreach (var Item in Lista)
+                    UserChat = AuxUser;
+                    Mensaje msm = new Mensaje();
+                    msm.RandomSecret = UserActivo.RandomSecret;
+                    msm.PublicKey = UserChat.PublicKey;
+                    msm.PublicKeyUser = UserActivo.PublicKey;
+                    msm.Emisor = UserActivo.User;
+                    msm.Receptor = UserChat.User;
+                    IEnumerable<Mensaje> Lista;
+                    HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/chat", msm).Result;
+                    Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
+                    List<Mensaje> Chats = new List<Mensaje>();
+                    if (Lista != null)
                     {
-                        if (Item.Chat.Contains(UserChat.User + UserActivo.User) && Item.Texto.Contains(Filtro))
+                        foreach (var Item in Lista)
                         {
-                            Chats.Add(Item);
+                            if (Item.Chat.Contains(UserChat.User + UserActivo.User) && Item.Texto.Contains(Filtro))
+                            {
+                                Chats.Add(Item);
+                            }
                         }
+                        Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
                     }
-                    Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
+                    ViewBag.Chats = Chats;
+                    ViewData["NombreUser"] = UserActivo.User;
+                    ViewBag.Contactos = UserActivo.Contactos;
+                    ViewBag.AgregarContacto = false;
+                    ViewBag.MostarChat = true;
+                    ViewBag.FiltrarMensaje = true;
+                    return View("MenuPrincipal", UserActivo);
                 }
-                ViewBag.Chats = Chats;
-                ViewData["NombreUser"] = UserActivo.User;
-                ViewBag.Contactos = UserActivo.Contactos;
-                ViewBag.AgregarContacto = false;
-                ViewBag.MostarChat = true;
-                return View("MenuPrincipal", UserActivo);
             }
             ViewData["NombreUser"] = UserActivo.User;
             ViewBag.Contactos = UserActivo.Contactos;
@@ -207,7 +220,6 @@ namespace MVC_Proyecto.Controllers
             ViewBag.MostarChat = false;
             return View("MenuPrincipal", UserActivo);
         }
-
         public ActionResult EnviarMensaje(string Texto)
         {
             Mensaje NuevoMensaje = new Mensaje();
@@ -231,76 +243,129 @@ namespace MVC_Proyecto.Controllers
             ViewData["NombreUser"] = UserActivo.User;
             ViewBag.Contactos = UserActivo.Contactos;
             ViewBag.MostarChat = true;
+            ViewBag.Enviar = true;
+            ViewBag.FiltrarMensaje = true;
+            return View("MenuPrincipal", UserActivo);
+        }
+        [HttpPost]
+        public async Task<ActionResult> EnviarFileAsync(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                ViewData["NombreUser"] = UserActivo.User;
+                ViewBag.Contactos = UserActivo.Contactos;
+                ViewBag.AgregarContacto = false;
+                //ViewBag.MostarChat = true;
+                //ViewBag.Enviar = true;
+                //ViewBag.FiltrarMensaje = true;
+                return View("MenuPrincipal", UserActivo);
+            }
+            var Ruta = Path.Combine( webHostEnvironment.ContentRootPath,"wwwroot","Archivos", file.FileName);
+
+            using (var stream = new FileStream(Ruta, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            Mensaje NuevoMensaje = new Mensaje();
+            NuevoMensaje.File = Ruta;
+            NuevoMensaje.Emisor = UserActivo.User;
+            NuevoMensaje.Receptor = UserChat.User;
+            NuevoMensaje.RandomSecret = UserActivo.RandomSecret;
+            NuevoMensaje.PublicKey = UserChat.PublicKey;
+            NuevoMensaje.PublicKeyUser = UserActivo.PublicKey;
+            NuevoMensaje.Fecha = DateTime.Now;
+            NuevoMensaje.FileNombre = file.FileName;
+            NuevoMensaje.Chat = NuevoMensaje.Emisor + NuevoMensaje.Receptor + NuevoMensaje.Receptor + NuevoMensaje.Emisor;           
+            HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("Mensajes", NuevoMensaje).Result;
+            IEnumerable<Mensaje> Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
+            List<Mensaje> Chats = new List<Mensaje>();
+            foreach (var Item in Lista)
+            {
+                Chats.Add(Item);
+            }
+            Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
+            ViewBag.Chats = Chats;
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.MostarChat = true;
+            ViewBag.Enviar = true;
+            ViewBag.FiltrarMensaje = true;
             return View("MenuPrincipal", UserActivo);
         }
 
-        // GET: Usuario/Create
-        public ActionResult Create()
+        public ActionResult Recargar()
         {
-            return View();
+            Usuario AuxUser = UserChat;
+            if (AuxUser != null)
+            {
+                UserChat = AuxUser;
+                Mensaje msm = new Mensaje();
+                msm.RandomSecret = UserActivo.RandomSecret;
+                msm.PublicKey = UserChat.PublicKey;
+                msm.PublicKeyUser = UserActivo.PublicKey;
+                msm.Emisor = UserActivo.User;
+                msm.Receptor = UserChat.User;
+                IEnumerable<Mensaje> Lista;
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/chat", msm).Result;
+                Lista = response.Content.ReadAsAsync<IEnumerable<Mensaje>>().Result;
+                List<Mensaje> Chats = new List<Mensaje>();
+                if (Lista != null)
+                {
+                    foreach (var Item in Lista)
+                    {
+                        if (Item.Chat.Contains(UserChat.User + UserActivo.User))
+                        {
+                            Chats.Add(Item);
+                        }
+                    }
+                    Chats.Sort((x, y) => x.Fecha.CompareTo(y.Fecha));
+                }
+                ViewBag.Chats = Chats;
+                ViewData["NombreUser"] = UserActivo.User;
+                ViewBag.Contactos = UserActivo.Contactos;
+                ViewBag.AgregarContacto = false;
+                ViewBag.MostarChat = true;
+                ViewBag.Enviar = true;
+                ViewBag.FiltrarMensaje = true;
+                return View("MenuPrincipal", UserActivo);
+            }
+            ViewData["NombreUser"] = UserActivo.User;
+            ViewBag.Contactos = UserActivo.Contactos;
+            ViewBag.AgregarContacto = false;
+            ViewBag.MostarChat = false;
+            return View("MenuPrincipal", UserActivo);
         }
-
-        // POST: Usuario/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public FileResult DescargarArchivo(string Ruta)
         {
-            try
+            Usuario AuxUser = UserChat;
+            if (AuxUser != null)
             {
-                // TODO: Add insert logic here
-
-                return RedirectToAction(nameof(Index));
+                UserChat = AuxUser;
+                Mensaje msm = new Mensaje();
+                msm.RandomSecret = UserActivo.RandomSecret;
+                msm.PublicKey = UserChat.PublicKey;
+                msm.PublicKeyUser = UserActivo.PublicKey;
+                msm.Emisor = UserActivo.User;
+                msm.Receptor = UserChat.User;
+                msm.File = Ruta;
+                msm.FileNombre = Path.Combine(webHostEnvironment.ContentRootPath, "wwwroot", "Descargas");
+                HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/descargar", msm).Result;
+                string FileFinal = response.Content.ReadAsAsync<string>().Result;
+                byte[] FileBytes = GetFile(FileFinal);
+                return File(FileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, Path.GetFileName(FileFinal));
+                //return File(FileFinal, "application/force- download", Path.GetFileName(FileFinal));
             }
-            catch
-            {
-                return View();
-            }
+            return null;
         }
-
-        // GET: Usuario/Edit/5
-        public ActionResult Edit(int id)
+        byte[] GetFile(string s)
         {
-            return View();
-        }
-
-        // POST: Usuario/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Usuario/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: Usuario/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            System.IO.FileStream fs = System.IO.File.OpenRead(s);
+            byte[] data = new byte[fs.Length];
+            int br = fs.Read(data, 0, data.Length);
+            if (br != fs.Length)
+                throw new System.IO.IOException(s);
+            fs.Close();
+            return data;
         }
     }
 }
