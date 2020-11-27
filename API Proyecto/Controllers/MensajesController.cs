@@ -158,6 +158,7 @@ namespace API_Proyecto.Controllers
                     LZW Compresor = new LZW();
                     string RutaOriginal = Path.GetFullPath("Archivos Compress\\" + mensaje.FileNombre);
                     FileStream Original = new FileStream(RutaOriginal, FileMode.OpenOrCreate);
+
                     FileStream Base = new FileStream(mensaje.File, FileMode.OpenOrCreate);
                     Base.CopyToAsync(Original);
                     Original.Close();
