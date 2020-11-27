@@ -361,9 +361,9 @@ namespace MVC_Proyecto.Controllers
                 msm.File = Ruta;
                 msm.FileNombre = Path.Combine(webHostEnvironment.ContentRootPath, "wwwroot", "Descargas");
                 HttpResponseMessage response = VariablesGlobales.WebApiClient.PostAsJsonAsync("mensajes/descargar", msm).Result;
-                string FileFinal = response.Content.ReadAsAsync<string>().Result;
-                byte[] FileBytes = GetFile(FileFinal);
-                return File(FileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, Path.GetFileName(FileFinal));
+                Archivo archivo = response.Content.ReadAsAsync<Archivo>().Result;
+                string FileFinal = Path.Combine(msm.FileNombre, archivo.Nombre);
+                return File(archivo.Contenido, System.Net.Mime.MediaTypeNames.Application.Octet, Path.GetFileName(FileFinal));
                 //return File(FileFinal, "application/force- download", Path.GetFileName(FileFinal));
             }
             return null;
