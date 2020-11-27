@@ -89,13 +89,13 @@ namespace API_Proyecto.Controllers
                     if(mensaje.File == item.File)
                     {
                         string RutaDecompres = Path.GetFullPath("Archivos Decompress\\" + item.FileNombre);
+                        FileStream ArchivoFinal = new FileStream(RutaDecompres, FileMode.OpenOrCreate);
+                        ArchivoFinal.Close();
                         Compresor.Descomprimir(item.File, RutaDecompres);
-                        FileStream ArchivoFinal = new FileStream(RutaDecompres, FileMode.Open);
                         Archivos archivos = new Archivos();
                         archivos.Contenido = GetFile(RutaDecompres);
                         archivos.Nombre = Path.GetFileName(RutaDecompres);
                         archivos.Ruta = RutaDecompres;
-                        ArchivoFinal.Close();
                         return archivos;
                     }
                 }
