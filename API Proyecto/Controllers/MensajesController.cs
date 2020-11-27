@@ -63,29 +63,6 @@ namespace API_Proyecto.Controllers
             }
             return default;
         }
-        //Cargar conversacion
-        [HttpPost("archivo")]
-        public ActionResult<bool> EnviarArchivo(Mensajes value)
-        {
-            try
-            {
-                LZW Compresor = new LZW();
-                // string RutaOriginal = Path.GetFullPath("Archivos Originales\\" + file.FileName);
-                //string RutaCompresion = Path.GetFullPath("Archivos Compress\\" + file.FileName.Split('.')[0] + ".lzw");
-                string RutaCompresion = Path.GetFullPath("Archivos Compress\\" + "hola" + ".lzw");
-                //FileStream ArchivoOriginal = new FileStream(RutaOriginal, FileMode.OpenOrCreate);
-                //file.CopyTo(ArchivoOriginal);
-                //ArchivoOriginal.Close();
-                Compresor.Comprimir(value.File, RutaCompresion);
-                //FileInfo Original = new FileInfo(RutaOriginal);
-                //FileInfo Comprimido = new FileInfo(RutaCompresion);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
 
         // GET: api/Usuarios/
         //Obtener un Mensajes por Usuario
@@ -101,7 +78,7 @@ namespace API_Proyecto.Controllers
         }
 
         [HttpPost("descargar")]
-        public string Descargar(Mensajes mensaje)
+        public Archivos Descargar(Mensajes mensaje)
         {
             var Lista = _Mensajes.FiltrarConversacion(mensaje);
             LZW Compresor = new LZW();
@@ -112,19 +89,28 @@ namespace API_Proyecto.Controllers
                     if(mensaje.File == item.File)
                     {
                         string RutaDecompres = Path.GetFullPath("Archivos Decompress\\" + item.FileNombre);
-                        string RutaDevulto = Path.Combine(mensaje.FileNombre, item.FileNombre);
                         Compresor.Descomprimir(item.File, RutaDecompres);
                         FileStream ArchivoFinal = new FileStream(RutaDecompres, FileMode.Open);
-                        FileStream ArchivoDevuelto = new FileStream(RutaDevulto, FileMode.OpenOrCreate);
-                        FileStreamResult FileFinal = new FileStreamResult(ArchivoFinal, "text/"+item.FileNombre.Split('.')[1]);
-                        ArchivoFinal.CopyToAsync(ArchivoDevuelto);
-                        ArchivoDevuelto.Close();
+                        Archivos archivos = new Archivos();
+                        archivos.Contenido = GetFile(RutaDecompres);
+                        archivos.Nombre = Path.GetFileName(RutaDecompres);
+                        archivos.Ruta = RutaDecompres;
                         ArchivoFinal.Close();
-                        return RutaDevulto;
+                        return archivos;
                     }
                 }
             }
             return default;
+        }
+        byte[] GetFile(string s)
+        {
+            System.IO.FileStream fs = System.IO.File.OpenRead(s);
+            byte[] data = new byte[fs.Length];
+            int br = fs.Read(data, 0, data.Length);
+            if (br != fs.Length)
+                throw new System.IO.IOException(s);
+            fs.Close();
+            return data;
         }
 
 
