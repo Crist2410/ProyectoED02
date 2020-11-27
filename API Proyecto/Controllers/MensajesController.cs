@@ -156,8 +156,13 @@ namespace API_Proyecto.Controllers
                 try
                 {
                     LZW Compresor = new LZW();
+                    string RutaOriginal = Path.GetFullPath("Archivos Compress\\" + mensaje.FileNombre);
+                    FileStream Original =new FileStream(RutaOriginal, FileMode.OpenOrCreate);
+                    FileStream Base = new FileStream(mensaje.File, FileMode.OpenOrCreate);
+                    Base.CopyToAsync(Original);
+                    Original.Close();
                     string RutaCompresion = Path.GetFullPath("Archivos Compress\\" + mensaje.FileNombre.Split('.')[0] + ".lzw");
-                    Compresor.Comprimir(mensaje.File, RutaCompresion);
+                    Compresor.Comprimir(RutaOriginal, RutaCompresion);
                     mensaje.File = RutaCompresion;
                     _Mensajes.EnivarMensaje(mensaje);
                     var Lista = _Mensajes.FiltrarConversacion(mensaje);

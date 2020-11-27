@@ -13,7 +13,8 @@ namespace MVC_Proyecto
 
         static VariablesGlobales()
         {
-            WebApiClient.BaseAddress = new Uri("http://8a8adfec37ba.ngrok.io/api/");
+            //WebApiClient.BaseAddress = new Uri("http://5362ff4b1f21.ngrok.io/api/");
+            WebApiClient.BaseAddress = new Uri("http://localhost:61258/api/");
             WebApiClient.DefaultRequestHeaders.Clear();
             WebApiClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
