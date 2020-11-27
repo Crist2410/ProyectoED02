@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,5 +17,6 @@ namespace MVC_Proyecto.Models
         public int RandomSecret { get; set; }
         public int PublicKeyUser { get; set; }
         public int PublicKey { get; set; }
+        public IFormFile File { get; set; }
     }
 }

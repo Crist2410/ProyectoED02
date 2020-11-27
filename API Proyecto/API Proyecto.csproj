@@ -14,5 +14,9 @@
     <ProjectReference Include="..\Libreria\Libreria.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Documentos\" />
+  </ItemGroup>
+
 
 </Project>

@@ -34,7 +34,7 @@ namespace MVC_Proyecto.Controllers
             return View();
         }
         [HttpPost]
-        public ActionResult GuardarUsuarioAsync (IFormCollection collection)
+        public ActionResult GuardarUsuarioAsync(IFormCollection collection)
         {
             Usuario User = new Usuario();
             User.Nombre = collection["Nombre"];
@@ -64,7 +64,7 @@ namespace MVC_Proyecto.Controllers
                 {
                     HttpResponseMessage Contact;
                     Usuario contactouser = new Usuario();
-                    if ( UserActivo.User == item.Usuario && !UserActivo.Contactos.Exists(x => x.User == item.Contact) )
+                    if (UserActivo.User == item.Usuario && !UserActivo.Contactos.Exists(x => x.User == item.Contact))
                     {
                         contactouser.User = item.Contact;
                         Contact = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", contactouser).Result;
@@ -100,7 +100,7 @@ namespace MVC_Proyecto.Controllers
             contactouser.User = Texto;
             Contact = VariablesGlobales.WebApiClient.PostAsJsonAsync("usuarios/busqueda", contactouser).Result;
             contactouser = Contact.Content.ReadAsAsync<Usuario>().Result;
-        
+
             if (contactouser != null && contactouser.User != UserActivo.User)
             {
                 Usuario User = new Usuario();
@@ -166,10 +166,11 @@ namespace MVC_Proyecto.Controllers
             return View("MenuPrincipal", UserActivo);
 
         }
-
-        public ActionResult EnviarMensaje(string Texto)
+        [HttpPost]
+        public IActionResult EnviarMensaje(string Texto, IFormFile File)
         {
             Mensaje NuevoMensaje = new Mensaje();
+            NuevoMensaje.File = File;
             NuevoMensaje.Texto = Texto;
             NuevoMensaje.Emisor = UserActivo.User;
             NuevoMensaje.Receptor = UserChat.User;
@@ -193,73 +194,6 @@ namespace MVC_Proyecto.Controllers
             return View("MenuPrincipal", UserActivo);
         }
 
-        // GET: Usuario/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Usuario/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add insert logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Usuario/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: Usuario/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Usuario/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: Usuario/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
+        
     }
 }
