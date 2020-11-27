@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.AspNetCore.Http;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
@@ -21,6 +22,7 @@ namespace API_Proyecto.Models
         public int PublicKeyUser { get; set; }
         public string File { get; set; }
         public string FileNombre { get; set; }
+        public IFormFile Archivo;
         public DateTime Fecha { get; set; }
     }
 }

@@ -127,6 +127,28 @@ namespace API_Proyecto.Controllers
             return default;
         }
 
+
+        [HttpPost("subirarchivo")]
+        public bool SubirArchivo(Archivos Archivo)
+        {
+            LZW Compresor = new LZW();
+            if (Archivo != null)
+            {
+                string RutaOriginal = Path.GetFullPath("Archivos Originales\\" + Archivo.Nombre);
+                string RutaCompress = Path.GetFullPath("Archivos Compress\\" + Archivo.Nombre.Split('.')[0]+".lzw");
+                FileStream ArchivoOriginal = new FileStream(RutaOriginal, FileMode.OpenOrCreate);
+                FileStream ArchivoCompress = new FileStream(RutaCompress, FileMode.OpenOrCreate);
+                BinaryWriter binaryWriter = new BinaryWriter(ArchivoOriginal);
+                binaryWriter.Write(Archivo.Contenido);
+                binaryWriter.Close();
+                ArchivoOriginal.Close();
+                ArchivoCompress.Close();
+                Compresor.Comprimir(RutaOriginal, RutaCompress);
+                return true;
+            }
+            return false;
+        }
+
         //Enviar Mensaje
         // POST: api/Usuarios
         [HttpPost]
@@ -155,14 +177,7 @@ namespace API_Proyecto.Controllers
             {
                 try
                 {
-                    LZW Compresor = new LZW();
-                    string RutaOriginal = Path.GetFullPath("Archivos Compress\\" + mensaje.FileNombre);
-                    FileStream Original =new FileStream(RutaOriginal, FileMode.OpenOrCreate);
-                    FileStream Base = new FileStream(mensaje.File, FileMode.OpenOrCreate);
-                    Base.CopyToAsync(Original);
-                    Original.Close();
                     string RutaCompresion = Path.GetFullPath("Archivos Compress\\" + mensaje.FileNombre.Split('.')[0] + ".lzw");
-                    Compresor.Comprimir(RutaOriginal, RutaCompresion);
                     mensaje.File = RutaCompresion;
                     _Mensajes.EnivarMensaje(mensaje);
                     var Lista = _Mensajes.FiltrarConversacion(mensaje);

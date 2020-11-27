@@ -17,6 +17,7 @@
   <ItemGroup>
     <Folder Include="Archivos Compress\" />
     <Folder Include="Archivos Decompress\" />
+    <Folder Include="Archivos Originales\" />
   </ItemGroup>
 
 
