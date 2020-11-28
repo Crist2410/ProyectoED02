@@ -72,8 +72,11 @@ namespace API_Proyecto.Controllers
             value.PassWord = Cesar.Cifrar(value.PassWord);
             value.RandomSecret = _Usuarios.ObtenerTodos().Count + 3; ;
             value.PublicKey = MayonesaHellmans.GeneracionPublicKey(value.RandomSecret);
-            _Usuarios.CrearUsuario(value);
-            return CreatedAtRoute("ObtenerUsuario",new { Id = value.ID.ToString()},value);
+            Usuarios AuxUser = _Usuarios.CrearUsuario(value);
+            if (AuxUser != null)
+                return CreatedAtRoute("ObtenerUsuario", new { Id = value.ID.ToString() }, value);
+            else
+                return default;
         }
 
     }

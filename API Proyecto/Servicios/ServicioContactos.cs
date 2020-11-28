@@ -24,8 +24,13 @@ namespace API_Proyecto.Servicios
         }
         public Contactos AgregarContacto(Contactos Contacto)
         {
-            _Contactos.InsertOne(Contacto);
-            return Contacto;
+            IEnumerable<Contactos> Lista = _Contactos.Find(Contactos => Contactos.Chat.Contains(Contacto.Usuario+Contacto.Contact)).ToList();
+            if (Lista.Count() == 0)
+            {
+                _Contactos.InsertOne(Contacto);
+                return Contacto;
+            }
+            return default;
         }
         public List<Contactos> ObtenerbyUser(string User)
         {

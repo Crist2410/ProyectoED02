@@ -81,13 +81,13 @@
                 {
                     <form asp-action="EnviarMensaje">
                         <div class="form-group">
-                            <input class="form-control mr-sm-2" style="margin-bottom:2px;width: 160%;margin-bottom: 10px;" placeholder="Mensaje" name="Texto">
+                            <input class="form-control mr-sm-2" style="width: 40%;margin-bottom: 10px;float: left;position: absolute;left: 50%;" placeholder="Mensaje" name="Texto">
                             <input type="submit" value="Enviar" class="btn btn-outline-light" />
                         </div>
                     </form>
                      @using (Html.BeginForm("EnviarFile", "Usuario", FormMethod.Post, new { enctype = "multipart/form-data" }))
                       {
-                         <input type="file" value="Subir Archivo" name="file" id="file" style="margin: 10px;" class="btn btn-outline-light" />
+                         <input type="file" value="Subir Archivo" name="file" id="file" style="left: 55%;position: absolute;" class="btn btn-outline-light" />
                          <input type="submit" value="Enviar Archivo" class="btn btn-outline-light" />
                       }
                   
@@ -104,7 +104,7 @@
         <div>
             <div style="padding:20px; padding-bottom: 30px">
                 <a asp-action="Index" class="btn btn-outline-dark"> Cerrar Sesion</a>
-                <a asp-action="Recargar" class="btn btn-outline-info"> Recargar</a>
+               @*<a asp-action="Recargar" class="btn btn-outline-info"> Recargar</a>*@
             </div>
         </div>
     </section>  

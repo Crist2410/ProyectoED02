@@ -46,13 +46,16 @@ namespace API_Proyecto.Controllers
         [HttpPost]
         public ActionResult<List<Contactos>> AgegrarContacto(Contactos Contacto)
         {
-            _Contactos.AgregarContacto(Contacto);
-            var Lista = _Contactos.ObtenerContactos(Contacto.Usuario);
-            if (Lista.Count != 0)
+            if (default != _Contactos.AgregarContacto(Contacto))
             {
-                return Lista;
+                var Lista = _Contactos.ObtenerContactos(Contacto.Usuario);
+                if (Lista.Count != 0)
+                {
+                    return Lista;
+                }
+                return default;
             }
-            return NotFound();
+            return default;
         }
     }
 }

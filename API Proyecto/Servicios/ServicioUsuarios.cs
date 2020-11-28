@@ -46,8 +46,13 @@ namespace API_Proyecto.Servicios
         }
         public Usuarios CrearUsuario(Usuarios Usuario)
         {
-            _Usuarios.InsertOne(Usuario);
-            return Usuario;
+            Usuarios User = _Usuarios.Find(x => x.User == Usuario.User).FirstOrDefault();
+            if (User == default)
+            {
+                _Usuarios.InsertOne(Usuario);
+                return Usuario;
+            }
+            return default;
         }
         public void Eliminar(string Id)
         {
