@@ -208,7 +208,11 @@ namespace MVC_Proyecto.Controllers
                     {
                         foreach (var Item in Lista)
                         {
-                            if (Item.Chat.Contains(UserChat.User + UserActivo.User) && Item.Texto.Contains(Filtro))
+                            if (Item.Chat.Contains(UserChat.User + UserActivo.User) && Item.Texto != null && Item.Texto.Contains(Filtro))
+                            {
+                                Chats.Add(Item);
+                            }
+                            else if(Item.Chat.Contains(UserChat.User + UserActivo.User) && Item.FileNombre != null && Item.FileNombre.Contains(Filtro))
                             {
                                 Chats.Add(Item);
                             }
@@ -322,8 +326,7 @@ namespace MVC_Proyecto.Controllers
             NuevoMensaje.Archivo = file;
             NuevoMensaje.FileNombre = file.FileName;
             NuevoMensaje.Chat = NuevoMensaje.Emisor + NuevoMensaje.Receptor + NuevoMensaje.Receptor + NuevoMensaje.Emisor;
-            //
-            byte[] FileBytes = GetFile(Ruta);
+            byte[] FileBytes = ConvertirArchivo(Ruta);
             Archivo archivo = new Archivo();
             archivo.Contenido = FileBytes;
             archivo.Nombre = Path.GetFileName(Ruta);
@@ -406,19 +409,18 @@ namespace MVC_Proyecto.Controllers
                 Archivo archivo = response.Content.ReadAsAsync<Archivo>().Result;
                 string FileFinal = Path.Combine(msm.FileNombre, archivo.Nombre);
                 return File(archivo.Contenido, System.Net.Mime.MediaTypeNames.Application.Octet, Path.GetFileName(FileFinal));
-                //return File(FileFinal, "application/force- download", Path.GetFileName(FileFinal));
             }
             return null;
         }
-        byte[] GetFile(string s)
+        byte[] ConvertirArchivo(string Ruta)
         {
-            System.IO.FileStream fs = System.IO.File.OpenRead(s);
-            byte[] data = new byte[fs.Length];
-            int br = fs.Read(data, 0, data.Length);
-            if (br != fs.Length)
-                throw new System.IO.IOException(s);
-            fs.Close();
-            return data;
+            FileStream ArchivoActual = System.IO.File.OpenRead(Ruta);
+            byte[] Datos = new byte[ArchivoActual.Length];
+            int Bytes = ArchivoActual.Read(Datos, 0, Datos.Length);
+            if (Bytes != ArchivoActual.Length)
+                throw new IOException(Ruta);
+            ArchivoActual.Close();
+            return Datos;
         }
     }
 }
